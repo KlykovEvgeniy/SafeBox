@@ -8,7 +8,7 @@ interface IAppState {
   username?: string; // Optional property support out-of-the-box
 }
 
-const store = new SafeBox<IAppState>();
+const store = new Store<IAppState>();
 
 // Register state nodes inside the secure container
 store.createState('amount', 12);
