@@ -1,57 +1,59 @@
-# Smart Store & Dynamic Schema Validator
+# SafeBox (Smart Store & Dynamic Schema Validator) 🚀
 
-An advanced, production-ready frontend architecture stack featuring a reactive, write-lockable state manager (`Smart Store`) integrated with an ultra-type-safe runtime schema validator.
-
----
-
-## 🏗️ Project Architecture
-
-This repository forms a unified solution for state management and data integrity, structured as follows:
-
-- **Smart Store (`new Store()`)** — A TypeScript generic container that isolates state properties into reactive memory cells, handles localized subscriptions, and supports programmatic access lock modes.
-- **Dynamic Validator** — A type-driven validation engine with comprehensive recursion support for deeply nested structures, multidimensional arrays, and customizable error messages.
+An advanced, production-ready state management architecture that combines a reactive state machine (**Smart Store**) with strict data mutation locks and an automated, type-driven runtime schema validator.
 
 ---
 
-## 📖 Navigation & Documentation
+## 🏗 Core Architecture
 
-Detailed specifications and technical references for each module are separated to maintain a clean repository layout:
-
-- 🛠️ **[SaveBox Specification (Technical Task)](./specs/smart-store-task.md)** — Core requirements for internal data container cells, observer loops, and lock/unlock API mechanics.
-- 🔤 **[SafeBox Validator Methods Reference](no_link)** — Quick dictionary of all available string, number, array, and date constraint methods with their data types.
+* **Smart Store (`new Store()`)** – A generic-driven container for isolated, reactive state slices featuring secure read/write locks.
+* **Dynamic Validator** – A type-based engine with recursion support for validating deep, nested data structures and rule evaluation.
 
 ---
 
-## 🚀 Quick Preview
+## 🛠 API Reference (Smart Store)
 
-The entire system relies on automatic type inference from your initial state. TypeScript will prevent code typos and enforce type restrictions at compile-time without using `any` or `as` type casts.
+* `createState(name, value)`: Initializes a new state slice. Throws if the key already exists.
+* `subscribe(name, cbName, callback)`: Registers an event listener for state updates. **Returns an unsubscribe function** for immediate cleanup.
+* `setSafe(name, newValue)`: Updates state safely. Rejects modifications and throws an error if the state is currently locked.
+* `lock(name)` / `unlock(name)`: Toggles the write-protection state, preventing unauthorized mutations.
+* `showState(name?)`: Returns a snapshot array of either a specific state slice or the entire store.
+
+---
+
+## 💻 Quick Start
 
 ```typescript
-import { Store } from "./store";
-import { Validator } from "./validator";
+import { Store } from "./Store";
 
-// 1. Define your data model
-interface IProfileState {
-  username: string;
-  age: number;
+// 1. Define your store interface
+interface AppState {
+  amount: number;
+  theme: "light" | "dark";
 }
 
-// 2. Initialize with absolute type safety
-const userStore = new Store<IProfileState>({
-  state: {
-    username: "alex_dev",
-    age: 25,
-  },
-  validation: {
-    username: { required: true, length: { min: 3 } },
-    age: { isInt: true, min: 18 },
-  },
+// 2. Initialize the SafeBox store
+const store = new Store<AppState>();
+store.createState("amount", 12);
+
+// 3. Subscribe to reactive changes
+const unsubscribe = store.subscribe("amount", "UI_Logger", (state) => {
+  console.log(`[Update] ${state.name} changed to: ${state.value}`);
 });
 
-// 3. Methods check signatures at compile time
-const age = userStore.check("age"); // Returns number type directly
+// 4. Modify safely (triggers subscriber)
+store.setSafe("amount", 23);
 
-// TypeScript will throw a compilation error here (number is not assignable to string)
-userStore.setSafe("username", 42);
+// 5. Lock state against mutation
+store.lock("amount");
+// store.setSafe("amount", 50); // ❌ Throws Error: amount is locked
+
+// 6. Clean up subscription
+unsubscribe();
 ```
-# SafeBox
+
+---
+
+## 📖 Complete Documentation
+
+Detailed type definitions for `ValidationFlatRules` and the internal recursive `Validator` engine specifications can be found within the codebase.
